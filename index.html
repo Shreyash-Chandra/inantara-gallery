@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inantara Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600;700&family=Literata:wght@400;600&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #F5F8EE;
+    --pistachio: #A9C98A;
+    --pistachio-soft: #DCE8C9;
+    --pistachio-line: #8DAF6C;
+    --pink: #F7D3DA;
+    --pink-soft: #FBE9EC;
+    --pink-line: #EDB9C5;
+    --rose: #8F3550;
+    --ocher: #D79F2D;
+    --ink: #2F3024;
+    --ink-soft: #5A5C48;
+    --paper: #FFFDF8;
+    --green-deep: #52703A;
+    --display: 'Young Serif', Georgia, serif;
+    --body: Karla, system-ui, sans-serif;
+    --read: Literata, Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); display: flex; flex-direction: column; min-height: 100vh; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2, p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--green-deep); outline-offset: 2px; }
+  label:focus-within { outline: 3px solid var(--green-deep); outline-offset: 2px; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    position: relative; overflow: hidden;
+    min-height: 44px; padding: 0 18px;
+    border: 1px solid transparent; border-radius: 999px;
+    font-weight: 700; font-size: 16px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, filter .15s ease;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(47, 48, 36, .16); }
+  .btn:active { transform: translateY(0) scale(.96); box-shadow: none; }
+  .btn:disabled { cursor: progress; opacity: .85; transform: none; box-shadow: none; }
+  .btn-ink { background: var(--ink); color: var(--ground); }
+  .btn-ocher { background: var(--ocher); color: var(--ink); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+  .btn-ghost:hover { background: rgba(47, 48, 36, .07); }
+  .btn-plain { background: transparent; color: var(--ink); }
+  .btn-plain:hover { background: rgba(47, 48, 36, .08); box-shadow: none; }
+  .btn-chip { background: var(--paper); border-color: #B9CDA0; font-weight: 600; }
+  .btn-chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .btn-square { border-radius: 0; }
+  .ripple { position: absolute; border-radius: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; background: rgba(255, 255, 255, .55); pointer-events: none; animation: ripple .6s ease-out forwards; }
+  .spin { width: 16px; height: 16px; border: 3px solid rgba(47, 48, 36, .25); border-top-color: var(--ink); border-radius: 50%; animation: spin .7s linear infinite; }
+
+  /* ---------- header ---------- */
+  .top { position: relative; overflow: hidden; background: var(--pistachio); border-bottom: 1px solid var(--pistachio-line); }
+  .top .blob { position: absolute; border-radius: 50%; pointer-events: none; animation: drift 11s ease-in-out infinite; }
+  .top-inner { position: relative; max-width: 1200px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .wordmark { font-family: var(--display); font-size: 26px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 40px 20px 56px; display: flex; flex-direction: column; gap: 48px; }
+  .intro { display: flex; flex-direction: column; gap: 12px; }
+  .intro h1 { font-family: var(--display); font-weight: 400; font-size: 46px; line-height: 1.1; text-wrap: balance; }
+  .intro p { max-width: 60ch; font-size: 18px; line-height: 1.55; color: var(--ink-soft); }
+  .sweep { display: block; width: 96px; height: 6px; transform-origin: left; animation: sweep .8s ease backwards; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; }
+  section.block { display: flex; flex-direction: column; gap: 28px; }
+
+  /* ---------- gallery ---------- */
+  .wall { column-width: 280px; column-gap: 24px; }
+  .card { position: relative; display: block; width: 100%; margin: 0 0 24px; padding: 10px; text-align: left; background: var(--paper); border: 1px solid #DCE3C9; border-radius: 2px; break-inside: avoid; transition: transform .2s ease, box-shadow .2s ease; animation: rise .55s ease backwards; }
+  .card:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 10px 24px rgba(47, 48, 36, .14); }
+  .card:active { transform: translateY(-1px) scale(.985); }
+  .card.drop { animation: dropIn .8s cubic-bezier(.2, .9, .3, 1.1) backwards, glow 1.4s ease .8s 2; }
+  .frame { overflow: hidden; }
+  .art { display: block; width: 100%; height: auto; transition: transform .6s ease; }
+  .card:hover .art { transform: scale(1.06); }
+  .cap { padding: 12px 4px 4px; display: flex; flex-direction: column; gap: 2px; }
+  .cap .ttl { font-family: var(--display); font-size: 19px; line-height: 1.25; }
+  .cap .sub { font-size: 14px; color: var(--ink-soft); }
+  .newtag { position: absolute; top: 18px; left: 18px; z-index: 1; padding: 4px 10px; background: var(--ocher); font-size: 13px; font-weight: 700; }
+  .empty { font-size: 18px; color: var(--ink-soft); }
+
+  .strip { display: flex; flex-direction: column; gap: 20px; padding: 32px; background: var(--pink); }
+  .strip-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .strip h2 { font-family: var(--display); font-weight: 400; font-size: 30px; }
+  .link { color: var(--rose); text-decoration: underline; }
+  .cards { display: flex; flex-wrap: wrap; gap: 16px; }
+  .wcard { flex: 1 1 260px; min-width: 0; text-align: left; padding: 20px; background: var(--pink-soft); border: 1px solid var(--pink-line); display: flex; flex-direction: column; gap: 8px; transition: transform .2s ease, box-shadow .2s ease; animation: rise .55s ease backwards; }
+  .wcard.big { flex-basis: 340px; padding: 28px; gap: 10px; }
+  .wcard:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 10px 24px rgba(47, 48, 36, .14); }
+  .wcard:active { transform: scale(.985); }
+  .kind { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--rose); }
+  .wcard .ttl { font-family: var(--display); font-size: 21px; line-height: 1.25; }
+  .wcard.big .ttl { font-size: 26px; line-height: 1.2; }
+  .wcard .exc { font-family: var(--read); font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+  .wcard.big .exc { font-size: 16px; line-height: 1.65; }
+  .wcard .by { font-size: 14px; color: var(--ink-soft); }
+  .pair { align-self: flex-start; padding: 4px 10px; background: var(--pistachio-soft); font-size: 13px; font-weight: 600; }
+
+  footer { background: var(--pistachio-soft); border-top: 1px solid #C3D6A8; }
+  footer div { max-width: 1200px; margin: 0 auto; padding: 20px; font-size: 14px; color: var(--ink-soft); }
+
+  /* ---------- modal ---------- */
+  .backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(47, 48, 36, .6); display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow-y: auto; animation: fadeIn .25s ease backwards; }
+  .sheet { width: 100%; max-width: 980px; background: var(--ground); display: flex; flex-wrap: wrap; animation: sheet .4s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .sheet-img { flex: 1 1 420px; min-width: 0; padding: 24px; background: var(--paper); display: flex; align-items: center; justify-content: center; }
+  .sheet-img img { display: block; max-width: 100%; max-height: 78vh; height: auto; }
+  .sheet-img .art { width: 100%; }
+  .sheet-info { flex: 1 1 320px; min-width: 0; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .sheet-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .sheet-info h2 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.15; }
+  .meta { display: flex; flex-direction: column; gap: 2px; }
+  .meta span:last-child { color: var(--ink-soft); }
+  .note { font-family: var(--read); font-size: 17px; line-height: 1.7; }
+  .reacts { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px; }
+  .rwrap { position: relative; display: inline-flex; }
+  .react { border-radius: 0; border-color: var(--ink); background: var(--paper); font-size: 15px; padding: 0 16px; }
+  .react .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--ink); }
+  .react.pop { animation: pop .45s ease; }
+  .petal { position: absolute; left: 50%; top: 6px; width: 10px; height: 14px; border-radius: 50% 50% 50% 0; pointer-events: none; animation: petal .9s ease-out forwards; }
+  .pairbox { padding: 16px; background: var(--pink-soft); border: 1px solid var(--pink-line); display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .pairbox.green { background: var(--pistachio-soft); border: 0; }
+  .pairbox .btn { padding: 0; min-height: 44px; font-family: var(--display); font-size: 20px; text-decoration: underline; text-align: left; justify-content: flex-start; border-radius: 0; }
+  .pairbox .btn:hover { transform: none; box-shadow: none; }
+  .paper { width: 100%; max-width: 700px; background: var(--pink-soft); padding: 40px 36px; display: flex; flex-direction: column; gap: 20px; animation: sheet .45s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .paper-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .paper h2 { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.15; }
+  .paper .by { font-size: 16px; color: var(--ink-soft); }
+  .lines { font-family: var(--read); font-size: 18px; line-height: 1.85; }
+  .lines div { min-height: 1.85em; animation: line .5s ease backwards; }
+
+  /* ---------- toast ---------- */
+  #toast { position: fixed; left: 50%; bottom: 24px; z-index: 40; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; padding: 12px 20px; background: var(--ink); color: var(--ground); font-weight: 600; transition: opacity .25s ease, transform .25s ease; max-width: calc(100vw - 32px); }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(20px); } }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes sheet { from { opacity: 0; transform: translateY(26px) scale(.97); } }
+  @keyframes line { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes sweep { from { transform: scaleX(0); } }
+  @keyframes drift { 50% { transform: translate(22px, -12px) scale(1.06); } }
+  @keyframes glow { 50% { box-shadow: 0 0 0 9px rgba(215, 159, 45, .35); } }
+  @keyframes dropIn { 0% { opacity: 0; transform: translateY(-46px) rotate(-3deg) scale(.92); } 60% { transform: translateY(8px) rotate(1deg); } }
+  @keyframes pop { 40% { transform: scale(1.25); } }
+  @keyframes petal { to { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
+  @keyframes ripple { to { transform: scale(34); opacity: 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shake { 20% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .petal, .ripple { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="blob" aria-hidden="true" style="left:8%;top:-34px;width:96px;height:96px;background:#F7D3DA;opacity:.75"></span>
+  <span class="blob" aria-hidden="true" style="left:34%;bottom:-30px;width:70px;height:70px;background:#D79F2D;opacity:.55;animation-direction:reverse"></span>
+  <span class="blob" aria-hidden="true" style="right:30%;top:-46px;width:120px;height:120px;background:#DCE8C9;opacity:.8;animation-duration:13s"></span>
+  <div class="top-inner">
+    <div class="wordmark">Inantara Gallery</div>
+    <nav id="nav" aria-label="Main"></nav>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer><div>Inantara Gallery, works by Rashi.</div></footer>
+
+<div id="modal"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- sample content ---------- */
+  var ARTS = [
+    { id: 'a1', title: 'Monsoon, 4 pm', artist: 'Rashi', medium: 'Watercolour on cotton paper', cat: 'Painting', year: '2025', ratio: '4 / 5',
+      bg: 'radial-gradient(ellipse 60% 40% at 30% 75%, #F0B9C6 0%, rgba(240,185,198,0) 70%), radial-gradient(ellipse 50% 45% at 72% 30%, #A9C98A 0%, rgba(169,201,138,0) 72%), linear-gradient(175deg, #F1E6C9 0%, #DDE8C8 100%)',
+      note: 'Painted from the balcony of our old flat. The pink is a dupatta that happened to be on the line.' },
+    { id: 'a2', title: 'Hands, study 3', artist: 'Rashi', medium: 'Pencil on newsprint', cat: 'Sketch', year: '2026', ratio: '1 / 1',
+      bg: 'repeating-linear-gradient(115deg, rgba(47,48,36,.55) 0px, rgba(47,48,36,.55) 1px, transparent 1px, transparent 7px), linear-gradient(160deg, #F6EFE0, #E8DCC0)',
+      note: 'Third page in a series of my father at the kitchen table. He sat for most of it.' },
+    { id: 'a3', title: 'Signal', artist: 'Rashi', medium: 'Digital, drawn on a tablet', cat: 'Digital', year: '2026', ratio: '3 / 4',
+      bg: 'conic-gradient(from 210deg at 60% 55%, #D79F2D, #F7D3DA, #A9C98A, #D79F2D)',
+      note: 'Made in one sitting on a train. I kept the first colours I picked.' },
+    { id: 'a4', title: 'Lotus pond, Hampi', artist: 'Rashi', medium: 'Gouache on board', cat: 'Painting', year: '2025', ratio: '5 / 4',
+      bg: 'radial-gradient(circle at 50% 62%, #F7C6D0 0, #F7C6D0 18%, transparent 19%), radial-gradient(circle at 36% 70%, #F2B3C2 0, #F2B3C2 14%, transparent 15%), radial-gradient(circle at 64% 70%, #F2B3C2 0, #F2B3C2 14%, transparent 15%), linear-gradient(180deg, #C9DDB0 0%, #8FB36E 100%)',
+      note: 'Painted the morning after the trip, while the colours were still clear in my head.' },
+    { id: 'a5', title: 'One standing', artist: 'Rashi', medium: 'Brush pen on paper', cat: 'Sketch', year: '2026', ratio: '2 / 3',
+      bg: 'linear-gradient(90deg, transparent 0, transparent 46%, #2F3024 46%, #2F3024 48%, transparent 48%), radial-gradient(circle at 47% 30%, #D79F2D 0, #D79F2D 12%, transparent 13%), linear-gradient(#F4EBD3, #F4EBD3)',
+      note: 'I did not plan the yellow circle until I got to it.' },
+    { id: 'a6', title: 'Bus window, Pune', artist: 'Rashi', medium: 'Photograph, phone camera', cat: 'Photography', year: '2026', ratio: '4 / 3',
+      bg: 'linear-gradient(180deg, #F4D9A0 0%, #E8B65A 38%, #E9B1BE 62%, #A9C98A 100%)',
+      note: 'Taken at 6:10 pm on the way home. Not edited.' },
+    { id: 'a7', title: 'Haldi', artist: 'Rashi', medium: 'Acrylic on board', cat: 'Painting', year: '2025', ratio: '1 / 1',
+      bg: 'radial-gradient(circle at 20% 20%, #D79F2D 0, #D79F2D 16%, transparent 17%), radial-gradient(circle at 80% 78%, #F2B3C2 0, #F2B3C2 24%, transparent 25%), linear-gradient(135deg, #DDE8C8, #F7E9D0)',
+      note: 'Mixing this yellow took six tries.' },
+    { id: 'a8', title: 'Sleeping cat, quick', artist: 'Rashi', medium: 'Pencil, five minutes', cat: 'Sketch', year: '2026', ratio: '4 / 5',
+      bg: 'repeating-linear-gradient(60deg, rgba(47,48,36,.4) 0px, rgba(47,48,36,.4) 1px, transparent 1px, transparent 6px), linear-gradient(#F9DDE2, #F4E7D3)',
+      note: 'He moved. This is what I got.' }
+  ];
+
+  var WRITINGS = [
+    { id: 'w1', title: 'Four o’clock, tin roof', author: 'Rashi', kind: 'Poem', artId: 'a1',
+      body: 'The rain starts on the left side first,\nthe way it did in our old flat,\none drum, then the whole kit.\n\nAmma pulls the clothes in with one arm\nand holds the radio steady with the other.\nNobody talks. The tea goes cold\nand nobody minds.' },
+    { id: 'w2', title: 'The turmeric stain', author: 'Rashi', kind: 'Prose', artId: 'a7',
+      body: 'There is a yellow stain on the kitchen shelf that was there before we moved in. I scrubbed it once with lemon and salt, and my aunt, who was visiting, told me to leave it alone. She said every kitchen needs one thing nobody has to keep clean.\n\nI painted the colour of that stain last winter. Ochre with a little red goes orange. Ochre with a little green goes muddy. What worked was ochre, a bit of raw umber, and a lot of water.' },
+    { id: 'w3', title: 'Drawing my father’s hands', author: 'Rashi', kind: 'Prose', artId: 'a2',
+      body: 'I started with the knuckles because they were the part I could get wrong without anyone noticing. By the fourth page I had stopped worrying and started looking at the scar across his left thumb. He says it is from a screwdriver. My mother says it is from a coconut.\n\nHe sat still for about ten minutes at a time and then reached for his phone. That is why the pencil weight changes from page to page. Each sitting was a different afternoon.' },
+    { id: 'w4', title: 'Lotus pond, Hampi', author: 'Rashi', kind: 'Poem', artId: 'a4',
+      body: 'Open at six, shut by noon.\nThe guide says it is the sun.\nI think they are tired\nof being looked at.\n\nI stood there with my sandals in my hand\nand the stone was already warm.' }
+  ];
+
+  var KINDS = [
+    { key: 'calm', label: 'Calming', color: '#A9C98A' },
+    { key: 'tender', label: 'Tender', color: '#F2B3C2' },
+    { key: 'spark', label: 'Inspiring', color: '#D79F2D' }
+  ];
+  var CATS = ['Painting', 'Sketch', 'Digital', 'Photography'];
+
+  /* ---------- state ---------- */
+  var state = {
+    view: 'gallery', filter: 'All', mode: 'art',
+    arts: ARTS.slice(), writings: WRITINGS.slice(),
+    reacts: {}, openArt: null, openWriting: null, fresh: null,
+    error: '', lastFocus: null,
+  };
+
+  /* ---------- helpers ---------- */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function artById(id) { return state.arts.filter(function (a) { return a.id === id; })[0]; }
+  function writingById(id) { return state.writings.filter(function (w) { return w.id === id; })[0]; }
+  function visibleArts() {
+    return state.arts.filter(function (a) { return state.filter === 'All' || a.cat === state.filter; });
+  }
+  function readMins(body) { return Math.max(1, Math.round(body.split(/\s+/).length / 200)) + ' min read'; }
+  function excerpt(w) {
+    var lines = w.body.split('\n').filter(function (l) { return l.trim(); });
+    if (w.kind === 'Poem') { return lines.slice(0, 2).join(' / '); }
+    var first = lines[0] || '';
+    return first.length > 150 ? first.slice(0, 150).trim() + '…' : first;
+  }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2800);
+  }
+
+  /* ---------- templates ---------- */
+  function artImage(a, extra) {
+    if (a.src) {
+      return '<img class="art" src="' + a.src + '" alt="' + esc(a.title) + ' by ' + esc(a.artist) + '">';
+    }
+    return '<div class="art" role="img" aria-label="' + esc(a.title) + ' by ' + esc(a.artist) + '" style="aspect-ratio:' + a.ratio + ';background:' + a.bg + '"></div>';
+  }
+
+  function artCard(a, i) {
+    var fresh = a.id === state.fresh;
+    return '<button type="button" class="card' + (fresh ? ' drop' : '') + '" data-act="open-art" data-id="' + a.id + '" style="animation-delay:' + (fresh ? '0ms, 800ms' : Math.min(i * 70, 700) + 'ms') + '">' +
+      (fresh ? '<span class="newtag">New</span>' : '') +
+      '<div class="frame">' + artImage(a) + '</div>' +
+      '<div class="cap"><span class="ttl">' + esc(a.title) + '</span><span class="sub">' + esc(a.medium) + '</span></div>' +
+      '</button>';
+  }
+
+  function writingCard(w, i, big) {
+    var art = w.artId ? artById(w.artId) : null;
+    return '<button type="button" class="wcard' + (big ? ' big' : '') + '" data-act="open-writing" data-id="' + w.id + '" style="animation-delay:' + Math.min(i * 90, 540) + 'ms">' +
+      '<span class="kind">' + esc(w.kind) + '</span>' +
+      '<span class="ttl">' + esc(w.title) + '</span>' +
+      '<span class="exc">' + esc(excerpt(w)) + '</span>' +
+      '<span class="by">' + esc(w.author) + ' · ' + readMins(w.body) + '</span>' +
+      (big && art ? '<span class="pair">Beside the artwork “' + esc(art.title) + '”</span>' : '') +
+      '</button>';
+  }
+
+  function galleryView() {
+    var list = visibleArts();
+    var chips = ['All'].concat(CATS).map(function (c) {
+      return '<button type="button" class="btn btn-chip" data-act="filter" data-id="' + c + '" aria-pressed="' + (state.filter === c) + '">' + c + '</button>';
+    }).join('');
+    return '<section class="block">' +
+      '<div class="intro"><h1>On the wall</h1><span class="sweep" style="background:#D79F2D"></span>' +
+      '<p>Paintings, sketches, photographs and digital work from people who wanted somewhere to put it. Open a piece to read what the artist wrote about it.</p></div>' +
+      '<div class="tools" role="group" aria-label="Filter by type">' + chips +
+      '<button type="button" class="btn btn-ocher" data-act="surprise">Surprise me</button></div>' +
+      (list.length ? '' : '<p class="empty">Nothing under this filter yet.</p>') +
+      '<div class="wall">' + list.map(artCard).join('') + '</div></section>' +
+      '<section class="strip" aria-labelledby="recent-h"><div class="strip-head"><h2 id="recent-h">Recently written</h2>' +
+      '<button type="button" class="btn btn-plain link" data-act="nav" data-id="writings">All writings</button></div>' +
+      '<div class="cards">' + state.writings.slice(0, 3).map(function (w, i) { return writingCard(w, i, false); }).join('') + '</div></section>';
+  }
+
+  function writingsView() {
+    return '<section class="block"><div class="intro"><h1>Writings</h1><span class="sweep" style="background:#F2B3C2"></span>' +
+      '<p>Poems, short prose and notes. A piece of writing can sit beside an artwork, and you will see the link on both.</p>' +
+      '<button type="button" class="btn btn-ocher" style="align-self:flex-start" data-act="surprise-writing">Read something at random</button></div>' +
+      '<div class="cards" style="gap:20px">' + state.writings.map(function (w, i) { return writingCard(w, i, true); }).join('') + '</div></section>';
+  }
+
+  function artModal(a) {
+    var w = state.writings.filter(function (x) { return x.artId === a.id; })[0];
+    var reacts = KINDS.map(function (k) {
+      var cur = state.reacts[a.id + ':' + k.key] || { n: 0, mine: false };
+      return '<span class="rwrap"><button type="button" class="btn react" data-act="react" data-id="' + k.key + '" data-color="' + k.color + '" aria-pressed="' + cur.mine + '"' +
+        (cur.mine ? ' style="background:' + k.color + '"' : '') + '><span class="dot" style="background:' + k.color + '"></span><span>' + k.label + ' · <span class="cnt">' + cur.n + '</span></span></button></span>';
+    }).join('');
+    return '<div class="backdrop" data-act="backdrop"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(a.title) + '">' +
+      '<div class="sheet-img">' + artImage(a) + '</div>' +
+      '<div class="sheet-info"><div class="sheet-bar">' +
+      '<button type="button" class="btn btn-ghost" data-act="prev" aria-label="Previous piece">Previous</button>' +
+      '<button type="button" class="btn btn-ghost" data-act="next" aria-label="Next piece">Next</button>' +
+      '<button type="button" class="btn btn-ink" data-act="close" id="close-btn">Close</button></div>' +
+      '<h2>' + esc(a.title) + '</h2>' +
+      '<div class="meta"><span><strong>' + esc(a.artist) + '</strong></span><span>' + esc(a.medium) + ', ' + esc(a.year) + '</span></div>' +
+      (a.note ? '<p class="note">' + esc(a.note) + '</p>' : '') +
+      '<div class="reacts" role="group" aria-label="React to this piece">' + reacts + '</div>' +
+      (w ? '<div class="pairbox"><span class="kind">Written beside this piece</span><button type="button" class="btn btn-plain" data-act="open-writing" data-id="' + w.id + '">' + esc(w.title) + '</button></div>' : '') +
+      '</div></div></div>';
+  }
+
+  function writingModal(w) {
+    var art = w.artId ? artById(w.artId) : null;
+    var lines = w.body.split('\n').map(function (t, i) {
+      return '<div style="animation-delay:' + Math.min(i * 80, 900) + 'ms">' + esc(t) + '</div>';
+    }).join('');
+    return '<div class="backdrop" data-act="backdrop"><div class="paper" role="dialog" aria-modal="true" aria-label="' + esc(w.title) + '">' +
+      '<div class="paper-top"><span class="kind">' + esc(w.kind) + '</span><div class="tools">' +
+      '<button type="button" class="btn btn-ghost" data-act="copy" data-id="' + w.id + '">Copy text</button>' +
+      '<button type="button" class="btn btn-ink" data-act="close" id="close-btn">Close</button></div></div>' +
+      '<h2>' + esc(w.title) + '</h2><div class="by">' + esc(w.author) + ' · ' + readMins(w.body) + '</div>' +
+      '<div class="lines">' + lines + '</div>' +
+      (art ? '<div class="pairbox green"><span class="kind" style="color:#52703A">Written beside</span><button type="button" class="btn btn-plain" data-act="open-art" data-id="' + art.id + '">' + esc(art.title) + '</button></div>' : '') +
+      '</div></div>';
+  }
+
+  /* ---------- rendering ---------- */
+  function renderNav() {
+    var items = [['gallery', 'Gallery'], ['writings', 'Writings']];
+    $('#nav').innerHTML = items.map(function (it) {
+      var on = state.view === it[0];
+      var cls = on ? 'btn-ink' : (it[0] === 'create' ? 'btn-ocher' : 'btn-plain');
+      return '<button type="button" class="btn ' + cls + '" data-act="nav" data-id="' + it[0] + '"' + (on ? ' aria-current="page"' : '') + '>' + it[1] + '</button>';
+    }).join('');
+  }
+
+  function renderMain() {
+    var html = state.view === 'writings' ? writingsView() : galleryView();
+    $('#main').innerHTML = html;
+    renderNav();
+  }
+
+  function renderModal() {
+    var m = $('#modal');
+    var a = state.openArt && artById(state.openArt);
+    var w = state.openWriting && writingById(state.openWriting);
+    if (!a && !w) {
+      m.innerHTML = '';
+      document.body.style.overflow = '';
+      if (state.lastFocus && state.lastFocus.focus) { state.lastFocus.focus(); }
+      return;
+    }
+    if (!m.innerHTML) { state.lastFocus = document.activeElement; }
+    m.innerHTML = a ? artModal(a) : writingModal(w);
+    document.body.style.overflow = 'hidden';
+    var close = $('#close-btn');
+    if (close) { close.focus(); }
+  }
+
+  function go(view) {
+    state.view = view;
+    state.openArt = null;
+    state.openWriting = null;
+    state.error = '';
+    renderModal();
+    renderMain();
+    window.scrollTo(0, 0);
+  }
+
+  function step(dir) {
+    var list = visibleArts();
+    var i = list.map(function (a) { return a.id; }).indexOf(state.openArt);
+    if (i < 0 || !list.length) { return; }
+    state.openArt = list[(i + dir + list.length) % list.length].id;
+    renderModal();
+  }
+
+  /* ---------- actions ---------- */
+  function burst(btn, color) {
+    var dirs = [[-44, -74, -130], [-20, -92, 60], [4, -80, -40], [26, -96, 110], [48, -70, 160]];
+    var wrap = btn.parentNode;
+    dirs.forEach(function (d, i) {
+      var p = document.createElement('span');
+      p.className = 'petal';
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'background:' + color + ';--dx:' + d[0] + 'px;--dy:' + d[1] + 'px;--rot:' + d[2] + 'deg;animation-delay:' + (i * 40) + 'ms';
+      wrap.appendChild(p);
+      setTimeout(function () { if (p.parentNode) { p.parentNode.removeChild(p); } }, 1200);
+    });
+  }
+
+  function react(btn) {
+    var key = btn.getAttribute('data-id');
+    var color = btn.getAttribute('data-color');
+    var rk = state.openArt + ':' + key;
+    var cur = state.reacts[rk] || { n: 0, mine: false };
+    var adding = !cur.mine;
+    state.reacts[rk] = { n: Math.max(0, cur.n + (adding ? 1 : -1)), mine: adding };
+    btn.setAttribute('aria-pressed', String(adding));
+    btn.style.background = adding ? color : '';
+    btn.querySelector('.cnt').textContent = state.reacts[rk].n;
+    if (adding) {
+      btn.classList.remove('pop');
+      void btn.offsetWidth;
+      btn.classList.add('pop');
+      burst(btn, color);
+    }
+  }
+
+  function copyWriting(id) {
+    var w = writingById(id);
+    if (!w) { return; }
+    var text = w.title + '\n' + w.author + '\n\n' + w.body;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast('Copied to the clipboard.'); },
+        function () { toast('Could not copy. Select the text and copy it by hand.'); }
+      );
+    } else {
+      toast('Could not copy. Select the text and copy it by hand.');
+    }
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]');
+    if (!t) { return; }
+    var act = t.getAttribute('data-act');
+    var id = t.getAttribute('data-id');
+    if (act === 'backdrop') {
+      if (e.target === t) { state.openArt = null; state.openWriting = null; renderModal(); }
+      return;
+    }
+    switch (act) {
+      case 'nav': go(id); break;
+      case 'filter': state.filter = id; renderMain(); break;
+      case 'open-art': state.openWriting = null; state.openArt = id; renderModal(); break;
+      case 'open-writing': state.openArt = null; state.openWriting = id; renderModal(); break;
+      case 'close': state.openArt = null; state.openWriting = null; renderModal(); break;
+      case 'prev': step(-1); break;
+      case 'next': step(1); break;
+      case 'react': react(t); break;
+      case 'surprise': { var list = visibleArts(); if (list.length) { state.openArt = pick(list).id; renderModal(); } break; }
+      case 'surprise-writing': state.openWriting = pick(state.writings).id; renderModal(); break;
+      case 'copy': copyWriting(id); break;
+    }
+  });
+
+  // ripple on every .btn
+  document.addEventListener('pointerdown', function (e) {
+    var b = e.target.closest && e.target.closest('.btn');
+    if (!b || b.disabled) { return; }
+    var rect = b.getBoundingClientRect();
+    var r = document.createElement('span');
+    r.className = 'ripple';
+    r.style.left = (e.clientX - rect.left) + 'px';
+    r.style.top = (e.clientY - rect.top) + 'px';
+    b.appendChild(r);
+    setTimeout(function () { if (r.parentNode) { r.parentNode.removeChild(r); } }, 650);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var open = state.openArt || state.openWriting;
+    if (!open) { return; }
+    if (e.key === 'Escape') { state.openArt = null; state.openWriting = null; renderModal(); }
+    else if (state.openArt && e.key === 'ArrowRight') { step(1); }
+    else if (state.openArt && e.key === 'ArrowLeft') { step(-1); }
+    else if (e.key === 'Tab') {
+      var items = document.querySelectorAll('#modal button');
+      if (!items.length) { return; }
+      var first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  renderMain();
+})();
+</script>
+</body>
+</html>
